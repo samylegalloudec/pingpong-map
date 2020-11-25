@@ -11,6 +11,7 @@ import { Tile as TileLayer, Vector as VectorLayer } from "ol/layer";
 import axios from "axios";
 import { useGeographic } from "ol/proj";
 
+//The necessary config to call the API.
 const axiosConfig = {
   headers: {
     "Content-Type": "text/plain; charset=utf-8",
@@ -20,18 +21,18 @@ const axiosConfig = {
     "Access-Control-Allow-Methods": "POST, GET, OPTIONS, PUT, DELETE",
   },
 };
-const proxyurl = "https://cors-anywhere.herokuapp.com/";
+const proxyurl = "https://cors-anywhere.herokuapp.com/"; //This proxy is used to avoid CORS problems.
 const apiUrl = "http://golmole.ddns.net:8080/traceroute";
 const baseUrl = "http://golmole.ddns.net:8080";
-const body = { address: "86.193.116.231" };
 
+//Adds the listeners to the buttons
 document.getElementById("singleIP").addEventListener("click", getOneRoute);
 document.getElementById("allIP").addEventListener("click", getAllRoutes);
 
 let formattedData = [];
-let numberOfRoutesByHop = new Map();
 useGeographic();
 
+//This function formats the data returned by the API, in the variable formattedData
 let formatData = function (axiosResponse) {
   if (Array.isArray(axiosResponse.data)) {
     for (let ip of axiosResponse.data) {
@@ -43,6 +44,7 @@ let formatData = function (axiosResponse) {
   }
 };
 
+//This function is used to format the hops in a useful way to create the lines.
 let formatHops = function (hops) {
   if (hops != null) {
     for (let i = 0; i < hops.length - 1; i++) {
@@ -51,15 +53,13 @@ let formatHops = function (hops) {
         dest: hops[i + 1],
       };
       formattedData.push(formattedHop);
-      numberOfRoutesByHop.set(formattedHop, 1);
     }
   }
 };
 
+//Creates the features (the lines for the routes)
 let addFeaturesToMap = function () {
-  console.log("data :", formattedData);
   let features = formattedData.map((hop) => {
-    console.log("hop : ", hop);
     let src = hop.source;
     let dest = hop.dest;
     let ping = [
@@ -86,14 +86,7 @@ let addFeaturesToMap = function () {
   map.addLayer(layer);
 };
 
-var raster = new TileLayer({
-  source: new OSM(),
-});
-var source = new VectorSource();
-var vector = new VectorLayer({
-  source: source,
-  style: styleFunction,
-});
+//Initialize the map at a certain point.
 var place = [4.835659, 45.764043];
 var map = new olMap({
   target: "map",
@@ -108,15 +101,16 @@ var map = new olMap({
   ],
 });
 
+//Creates the style for the lines that will be displayed for the routes.
 let styleFunction = function (feature) {
   let geometry = feature.getGeometry();
-  var randomColor = Math.floor(Math.random() * 16777215).toString(16);
+  //var randomColor = Math.floor(Math.random() * 16777215).toString(16);
   let styles = [
     new Style({
       stroke: new Stroke({
         // color: "#" + randomColor,
-        color: [50, 0, 0],
-        width: 2,
+        color: [128, 128, 128],
+        width: 1,
       }),
     }),
   ];
@@ -142,23 +136,23 @@ let styleFunction = function (feature) {
   return styles;
 };
 
-map.on("pointermove", function (event) {
-  if (map.hasFeatureAtPixel(event.pixel)) {
-    map.getViewport().style.cursor = "pointer";
-  } else {
-    map.getViewport().style.cursor = "inherit";
-  }
-});
-
+//Retrieves one traceroute result from the API.
 function getOneRoute() {
   console.log("requête post - 1 ip");
-  axios.post(proxyurl + apiUrl, body, axiosConfig).then((response) => {
-    console.log("single route : ", response);
-    formatData(response);
-    addFeaturesToMap();
-  });
+  let ipAddress = document.getElementById("inputSingleIP").value;
+  if (validateIPorURL(ipAddress)) {
+    let body = { address: ipAddress };
+    axios.post(proxyurl + apiUrl, body, axiosConfig).then((response) => {
+      console.log("single route : ", response);
+      formatData(response);
+      addFeaturesToMap();
+    });
+  } else {
+    alert("You need to insert a valid URL or IPv4");
+  }
 }
 
+//Retrieves all routes from the API.
 function getAllRoutes() {
   console.log("requête get - toutes les ip");
   axios
@@ -167,17 +161,18 @@ function getAllRoutes() {
       console.log("response : ", response);
       formatData(response);
       addFeaturesToMap();
-      let test = formattedData.reduce(function (obj, value) {
-        console.log(obj);
-        console.log(value);
-      });
-      console.log("test : ", test);
     });
 }
 
-// map.addInteraction(
-//   new Draw({
-//     source: source,
-//     type: "LineString",
-//   })
-// );
+function validateIPorURL(ipaddress) {
+  var pattern = new RegExp(
+    "^(https?:\\/\\/)?" + // protocol
+      "((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|" + // domain name
+      "((\\d{1,3}\\.){3}\\d{1,3}))" + // OR ip (v4) address
+      "(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*" + // port and path
+      "(\\?[;&a-z\\d%_.~+=-]*)?" + // query string
+      "(\\#[-a-z\\d_]*)?$",
+    "i"
+  ); // fragment locator
+  return !!pattern.test(ipaddress);
+}

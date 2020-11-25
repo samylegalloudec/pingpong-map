@@ -112954,6 +112954,7 @@ function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o =
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
+//The necessary config to call the API.
 var axiosConfig = {
   headers: {
     "Content-Type": "text/plain; charset=utf-8",
@@ -112962,17 +112963,15 @@ var axiosConfig = {
     "Access-Control-Allow-Methods": "POST, GET, OPTIONS, PUT, DELETE"
   }
 };
-var proxyurl = "https://cors-anywhere.herokuapp.com/";
+var proxyurl = "https://cors-anywhere.herokuapp.com/"; //This proxy is used to avoid CORS problems.
+
 var apiUrl = "http://golmole.ddns.net:8080/traceroute";
-var baseUrl = "http://golmole.ddns.net:8080";
-var body = {
-  address: "86.193.116.231"
-};
+var baseUrl = "http://golmole.ddns.net:8080"; //Adds the listeners to the buttons
+
 document.getElementById("singleIP").addEventListener("click", getOneRoute);
 document.getElementById("allIP").addEventListener("click", getAllRoutes);
 var formattedData = [];
-var numberOfRoutesByHop = new Map();
-(0, _proj.useGeographic)();
+(0, _proj.useGeographic)(); //This function formats the data returned by the API, in the variable formattedData
 
 var formatData = function formatData(axiosResponse) {
   if (Array.isArray(axiosResponse.data)) {
@@ -112993,7 +112992,8 @@ var formatData = function formatData(axiosResponse) {
     var hops = axiosResponse.data.hops;
     formatHops(hops);
   }
-};
+}; //This function is used to format the hops in a useful way to create the lines.
+
 
 var formatHops = function formatHops(hops) {
   if (hops != null) {
@@ -113003,15 +113003,13 @@ var formatHops = function formatHops(hops) {
         dest: hops[i + 1]
       };
       formattedData.push(formattedHop);
-      numberOfRoutesByHop.set(formattedHop, 1);
     }
   }
-};
+}; //Creates the features (the lines for the routes)
+
 
 var addFeaturesToMap = function addFeaturesToMap() {
-  console.log("data :", formattedData);
   var features = formattedData.map(function (hop) {
-    console.log("hop : ", hop);
     var src = hop.source;
     var dest = hop.dest;
     var ping = [[src.location.lon !== "" ? src.location.lon : 0, src.location.lat !== "" ? src.location.lat : 0], [dest.location.lon !== "" ? dest.location.lon : 0, dest.location.lat !== "" ? dest.location.lat : 0]];
@@ -113024,16 +113022,9 @@ var addFeaturesToMap = function addFeaturesToMap() {
     style: styleFunction
   });
   map.addLayer(layer);
-};
+}; //Initialize the map at a certain point.
 
-var raster = new _layer.Tile({
-  source: new _source.OSM()
-});
-var source = new _source.Vector();
-var vector = new _layer.Vector({
-  source: source,
-  style: styleFunction
-});
+
 var place = [4.835659, 45.764043];
 var map = new _Map.default({
   target: "map",
@@ -113044,16 +113035,16 @@ var map = new _Map.default({
   layers: [new _layer.Tile({
     source: new _source.OSM()
   })]
-});
+}); //Creates the style for the lines that will be displayed for the routes.
 
 var styleFunction = function styleFunction(feature) {
-  var geometry = feature.getGeometry();
-  var randomColor = Math.floor(Math.random() * 16777215).toString(16);
+  var geometry = feature.getGeometry(); //var randomColor = Math.floor(Math.random() * 16777215).toString(16);
+
   var styles = [new _style.Style({
     stroke: new _style.Stroke({
       // color: "#" + randomColor,
-      color: [50, 0, 0],
-      width: 2
+      color: [128, 128, 128],
+      width: 1
     })
   })];
   geometry.forEachSegment(function (start, end) {
@@ -113072,25 +113063,28 @@ var styleFunction = function styleFunction(feature) {
     }));
   });
   return styles;
-};
+}; //Retrieves one traceroute result from the API.
 
-map.on("pointermove", function (event) {
-  if (map.hasFeatureAtPixel(event.pixel)) {
-    map.getViewport().style.cursor = "pointer";
-  } else {
-    map.getViewport().style.cursor = "inherit";
-  }
-});
 
 function getOneRoute() {
   console.log("requête post - 1 ip");
+  var ipAddress = document.getElementById("inputSingleIP").value;
 
-  _axios.default.post(proxyurl + apiUrl, body, axiosConfig).then(function (response) {
-    console.log("single route : ", response);
-    formatData(response);
-    addFeaturesToMap();
-  });
-}
+  if (validateIPorURL(ipAddress)) {
+    var body = {
+      address: ipAddress
+    };
+
+    _axios.default.post(proxyurl + apiUrl, body, axiosConfig).then(function (response) {
+      console.log("single route : ", response);
+      formatData(response);
+      addFeaturesToMap();
+    });
+  } else {
+    alert("You need to insert a valid URL or IPv4");
+  }
+} //Retrieves all routes from the API.
+
 
 function getAllRoutes() {
   console.log("requête get - toutes les ip");
@@ -113099,18 +113093,19 @@ function getAllRoutes() {
     console.log("response : ", response);
     formatData(response);
     addFeaturesToMap();
-    var test = formattedData.reduce(function (obj, value) {
-      console.log(obj);
-      console.log(value);
-    });
-    console.log("test : ", test);
   });
-} // map.addInteraction(
-//   new Draw({
-//     source: source,
-//     type: "LineString",
-//   })
-// );
+}
+
+function validateIPorURL(ipaddress) {
+  var pattern = new RegExp("^(https?:\\/\\/)?" + // protocol
+  "((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|" + // domain name
+  "((\\d{1,3}\\.){3}\\d{1,3}))" + // OR ip (v4) address
+  "(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*" + // port and path
+  "(\\?[;&a-z\\d%_.~+=-]*)?" + // query string
+  "(\\#[-a-z\\d_]*)?$", "i"); // fragment locator
+
+  return !!pattern.test(ipaddress);
+}
 },{"ol/ol.css":"node_modules/ol/ol.css","ol/interaction/Draw":"node_modules/ol/interaction/Draw.js","ol/Map":"node_modules/ol/Map.js","ol/geom/Point":"node_modules/ol/geom/Point.js","ol/index":"node_modules/ol/index.js","ol/geom":"node_modules/ol/geom.js","ol/View":"node_modules/ol/View.js","ol/style":"node_modules/ol/style.js","ol/source":"node_modules/ol/source.js","ol/layer":"node_modules/ol/layer.js","axios":"node_modules/axios/index.js","ol/proj":"node_modules/ol/proj.js"}],"node_modules/parcel/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -113138,7 +113133,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "52171" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "52349" + '/');
 
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);

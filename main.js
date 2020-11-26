@@ -172,7 +172,7 @@ function getAllRoutes() {
       //   }),
       //   {}
       // );
-      console.log("formattedData : ", test);
+      // console.log("formattedData : ", test);
     });
 }
 

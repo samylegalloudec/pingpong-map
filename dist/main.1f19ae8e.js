@@ -113069,6 +113069,7 @@ var styleFunction = function styleFunction(feature) {
 function getOneRoute() {
   console.log("requête post - 1 ip");
   var ipAddress = document.getElementById("inputSingleIP").value;
+  document.getElementById("loader").style.display = "block";
 
   if (validateIPorURL(ipAddress)) {
     var body = {
@@ -113076,6 +113077,7 @@ function getOneRoute() {
     };
 
     _axios.default.post(proxyurl + apiUrl, body, axiosConfig).then(function (response) {
+      document.getElementById("loader").style.display = "none";
       console.log("single route : ", response);
       formatData(response);
       addFeaturesToMap();
@@ -113092,7 +113094,15 @@ function getAllRoutes() {
   _axios.default.get(proxyurl + baseUrl + "/all-routes", axiosConfig).then(function (response) {
     console.log("response : ", response);
     formatData(response);
-    addFeaturesToMap();
+    addFeaturesToMap(); // let test = formattedData.reduce(
+    //   (map, hop) => ({
+    //     ...map,
+    //     [hop]: (map[hop] || 0) + 1,
+    //   }),
+    //   {}
+    // );
+
+    console.log("formattedData : ", test);
   });
 }
 
@@ -113133,7 +113143,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "52349" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "65472" + '/');
 
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);

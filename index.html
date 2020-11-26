@@ -5,6 +5,7 @@
     <title>Map ping pong</title>
     <!-- Pointer events polyfill for old browsers, see https://caniuse.com/#feat=pointer -->
     <script src="https://unpkg.com/elm-pep"></script>
+    <link rel="stylesheet" href="style.css">
     <style>
         .map {
             width: 100%;
@@ -14,11 +15,17 @@
 </head>
 
 <body>
-    <button id="allIP">All the routes</button>
-    <button id="singleIP" id="singleRoute">Single traceroute</button>
-    <input type="text" id="inputSingleIP" placeholder="Insert URL or IPv4 here">
-    <div id="map" class="map"></div>
+    <div>
+        <button id="allIP">All the routes</button>
+        <button id="singleIP" id="singleRoute">Single traceroute</button>
+        <input type="text" id="inputSingleIP" placeholder="Insert URL or IPv4 here">
+        <div id="map" class="map"></div>
+        <div>
+            <div id="loader" class="loader"></div>
+        </div>
+    </div>
     <script src="main.js"></script>
+    
 </body>
 
 

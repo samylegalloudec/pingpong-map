@@ -140,9 +140,11 @@ let styleFunction = function (feature) {
 function getOneRoute() {
   console.log("requête post - 1 ip");
   let ipAddress = document.getElementById("inputSingleIP").value;
+  document.getElementById("loader").style.display = "block";
   if (validateIPorURL(ipAddress)) {
     let body = { address: ipAddress };
     axios.post(proxyurl + apiUrl, body, axiosConfig).then((response) => {
+      document.getElementById("loader").style.display = "none";
       console.log("single route : ", response);
       formatData(response);
       addFeaturesToMap();
@@ -155,12 +157,22 @@ function getOneRoute() {
 //Retrieves all routes from the API.
 function getAllRoutes() {
   console.log("requête get - toutes les ip");
+
   axios
     .get(proxyurl + baseUrl + "/all-routes", axiosConfig)
     .then((response) => {
       console.log("response : ", response);
+
       formatData(response);
       addFeaturesToMap();
+      // let test = formattedData.reduce(
+      //   (map, hop) => ({
+      //     ...map,
+      //     [hop]: (map[hop] || 0) + 1,
+      //   }),
+      //   {}
+      // );
+      console.log("formattedData : ", test);
     });
 }
 

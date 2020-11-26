@@ -35,3 +35,7 @@ The result is stored in a redis database in the backend.
 The other request shows the result of all the traceroutes results stored in the redis database.
 We can easily see that some routes are used a lot by different IP addresses. 
 
+Link of the presentation : 
+
+[https://docs.google.com/presentation/d/1J6Gn3-20UrDgC5_Wi6Tt_dhnymZp_IfxwGfGpg2wBFc/edit#slide=id.gad729dee0f_0_95](https://docs.google.com/presentation/d/1J6Gn3-20UrDgC5_Wi6Tt_dhnymZp_IfxwGfGpg2wBFc/edit#slide=id.gad729dee0f_0_95)
+

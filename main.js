@@ -139,9 +139,9 @@ let styleFunction = function (feature) {
 //Retrieves one traceroute result from the API.
 function getOneRoute() {
   console.log("requête post - 1 ip");
-  let ipAddress = document.getElementById("inputSingleIP").value;
   document.getElementById("loader").style.display = "block";
   if (validateIPorURL(ipAddress)) {
+    let ipAddress = document.getElementById("inputSingleIP").value;
     let body = { address: ipAddress };
     axios.post(proxyurl + apiUrl, body, axiosConfig).then((response) => {
       document.getElementById("loader").style.display = "none";
